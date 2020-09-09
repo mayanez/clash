@@ -37,6 +37,7 @@ type ShadowSocksOption struct {
 	UDP        bool                   `proxy:"udp,omitempty"`
 	Plugin     string                 `proxy:"plugin,omitempty"`
 	PluginOpts map[string]interface{} `proxy:"plugin-opts,omitempty"`
+	NoTrack    bool                   `proxy:"notrack,omitempty"`
 }
 
 type simpleObfsOption struct {
@@ -156,10 +157,11 @@ func NewShadowSocks(option ShadowSocksOption) (*ShadowSocks, error) {
 
 	return &ShadowSocks{
 		Base: &Base{
-			name: option.Name,
-			addr: addr,
-			tp:   C.Shadowsocks,
-			udp:  option.UDP,
+			name:    option.Name,
+			addr:    addr,
+			tp:      C.Shadowsocks,
+			udp:     option.UDP,
+			notrack: option.NoTrack,
 		},
 		cipher: ciph,
 

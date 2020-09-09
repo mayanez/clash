@@ -91,7 +91,7 @@ func (r *Relay) proxies(metadata *C.Metadata) []C.Proxy {
 
 func NewRelay(name string, providers []provider.ProxyProvider) *Relay {
 	return &Relay{
-		Base:      outbound.NewBase(name, "", C.Relay, false),
+		Base:      outbound.NewBase(name, "", C.Relay, false, false),
 		single:    singledo.NewSingle(defaultGetProxiesDuration),
 		providers: providers,
 	}

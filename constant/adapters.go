@@ -69,6 +69,7 @@ type ProxyAdapter interface {
 	DialContext(ctx context.Context, metadata *Metadata) (Conn, error)
 	DialUDP(metadata *Metadata) (PacketConn, error)
 	SupportUDP() bool
+	DisableTracker() bool
 	MarshalJSON() ([]byte, error)
 	Addr() string
 	// Unwrap extracts the proxy from a proxy-group. It returns nil when nothing to extract.

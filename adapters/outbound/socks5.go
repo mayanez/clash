@@ -33,6 +33,7 @@ type Socks5Option struct {
 	TLS            bool   `proxy:"tls,omitempty"`
 	UDP            bool   `proxy:"udp,omitempty"`
 	SkipCertVerify bool   `proxy:"skip-cert-verify,omitempty"`
+	NoTrack        bool   `proxy:"notrack,omitempty"`
 }
 
 func (ss *Socks5) StreamConn(c net.Conn, metadata *C.Metadata) (net.Conn, error) {
@@ -137,10 +138,11 @@ func NewSocks5(option Socks5Option) *Socks5 {
 
 	return &Socks5{
 		Base: &Base{
-			name: option.Name,
-			addr: net.JoinHostPort(option.Server, strconv.Itoa(option.Port)),
-			tp:   C.Socks5,
-			udp:  option.UDP,
+			name:    option.Name,
+			addr:    net.JoinHostPort(option.Server, strconv.Itoa(option.Port)),
+			tp:      C.Socks5,
+			udp:     option.UDP,
+			notrack: option.NoTrack,
 		},
 		user:           option.UserName,
 		pass:           option.Password,

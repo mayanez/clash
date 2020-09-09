@@ -25,6 +25,7 @@ type SnellOption struct {
 	Port     int                    `proxy:"port"`
 	Psk      string                 `proxy:"psk"`
 	ObfsOpts map[string]interface{} `proxy:"obfs-opts,omitempty"`
+	NoTrack  bool                   `proxy:"notrack,omitempty"`
 }
 
 func (s *Snell) StreamConn(c net.Conn, metadata *C.Metadata) (net.Conn, error) {
@@ -68,9 +69,10 @@ func NewSnell(option SnellOption) (*Snell, error) {
 
 	return &Snell{
 		Base: &Base{
-			name: option.Name,
-			addr: addr,
-			tp:   C.Snell,
+			name:    option.Name,
+			addr:    addr,
+			tp:      C.Snell,
+			notrack: option.NoTrack,
 		},
 		psk:        psk,
 		obfsOption: obfsOption,

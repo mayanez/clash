@@ -36,6 +36,7 @@ type VmessOption struct {
 	WSHeaders      map[string]string `proxy:"ws-headers,omitempty"`
 	SkipCertVerify bool              `proxy:"skip-cert-verify,omitempty"`
 	ServerName     string            `proxy:"servername,omitempty"`
+	NoTrack        bool              `proxy:"notrack,omitempty"`
 }
 
 type HTTPOptions struct {
@@ -155,10 +156,11 @@ func NewVmess(option VmessOption) (*Vmess, error) {
 
 	return &Vmess{
 		Base: &Base{
-			name: option.Name,
-			addr: net.JoinHostPort(option.Server, strconv.Itoa(option.Port)),
-			tp:   C.Vmess,
-			udp:  true,
+			name:    option.Name,
+			addr:    net.JoinHostPort(option.Server, strconv.Itoa(option.Port)),
+			tp:      C.Vmess,
+			udp:     true,
+			notrack: option.NoTrack,
 		},
 		client: client,
 		option: &option,

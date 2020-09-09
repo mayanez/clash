@@ -26,6 +26,7 @@ type TrojanOption struct {
 	SNI            string   `proxy:"sni,omitempty"`
 	SkipCertVerify bool     `proxy:"skip-cert-verify,omitempty"`
 	UDP            bool     `proxy:"udp,omitempty"`
+	NoTrack        bool     `proxy:"notrack,omitempty"`
 }
 
 func (t *Trojan) StreamConn(c net.Conn, metadata *C.Metadata) (net.Conn, error) {
@@ -97,10 +98,11 @@ func NewTrojan(option TrojanOption) (*Trojan, error) {
 
 	return &Trojan{
 		Base: &Base{
-			name: option.Name,
-			addr: addr,
-			tp:   C.Trojan,
-			udp:  option.UDP,
+			name:    option.Name,
+			addr:    addr,
+			tp:      C.Trojan,
+			udp:     option.UDP,
+			notrack: option.NoTrack,
 		},
 		instance: trojan.New(tOption),
 	}, nil

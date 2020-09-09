@@ -266,7 +266,13 @@ func handleTCPConn(localConn C.ServerAdapter) {
 		log.Warnln("dial %s error: %s", proxy.Name(), err.Error())
 		return
 	}
-	remoteConn = newTCPTracker(remoteConn, DefaultManager, metadata, rule)
+
+	log.Debugln("[TCP] Disable Tracker for %s: %s", proxy.Name(), proxy.DisableTracker())
+
+	if !proxy.DisableTracker() {
+		remoteConn = newTCPTracker(remoteConn, DefaultManager, metadata, rule)
+	}
+
 	defer remoteConn.Close()
 
 	switch true {

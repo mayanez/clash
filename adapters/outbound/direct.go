@@ -12,6 +12,11 @@ type Direct struct {
 	*Base
 }
 
+type DirectOption struct {
+	Name    string `proxy:"name"`
+	NoTrack bool   `proxy:"notrack,omitempty"`
+}
+
 func (d *Direct) DialContext(ctx context.Context, metadata *C.Metadata) (C.Conn, error) {
 	address := net.JoinHostPort(metadata.String(), metadata.DstPort)
 
@@ -35,12 +40,13 @@ type directPacketConn struct {
 	net.PacketConn
 }
 
-func NewDirect() *Direct {
+func NewDirect(option *DirectOption) *Direct {
 	return &Direct{
 		Base: &Base{
-			name: "DIRECT",
-			tp:   C.Direct,
-			udp:  true,
+			name:    option.Name,
+			tp:      C.Direct,
+			udp:     true,
+			notrack: option.NoTrack,
 		},
 	}
 }

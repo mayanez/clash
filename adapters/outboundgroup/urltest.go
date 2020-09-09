@@ -119,7 +119,7 @@ func parseURLTestOption(config map[string]interface{}) []urlTestOption {
 
 func NewURLTest(name string, providers []provider.ProxyProvider, options ...urlTestOption) *URLTest {
 	urlTest := &URLTest{
-		Base:       outbound.NewBase(name, "", C.URLTest, false),
+		Base:       outbound.NewBase(name, "", C.URLTest, false, false),
 		single:     singledo.NewSingle(defaultGetProxiesDuration),
 		fastSingle: singledo.NewSingle(time.Second * 10),
 		providers:  providers,
