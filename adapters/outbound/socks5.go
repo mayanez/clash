@@ -33,6 +33,7 @@ type Socks5Option struct {
 	TLS            bool   `proxy:"tls,omitempty"`
 	UDP            bool   `proxy:"udp,omitempty"`
 	SkipCertVerify bool   `proxy:"skip-cert-verify,omitempty"`
+	SocketMark     string `proxy:"socket-mark,omitempty"`
 }
 
 func (ss *Socks5) StreamConn(c net.Conn, metadata *C.Metadata) (net.Conn, error) {
@@ -59,7 +60,7 @@ func (ss *Socks5) StreamConn(c net.Conn, metadata *C.Metadata) (net.Conn, error)
 }
 
 func (ss *Socks5) DialContext(ctx context.Context, metadata *C.Metadata) (C.Conn, error) {
-	c, err := dialer.DialContext(ctx, "tcp", ss.addr)
+	c, err := dialer.DialContext(ctx, "tcp", ss.addr, ss.SocketMark())
 	if err != nil {
 		return nil, fmt.Errorf("%s connect error: %w", ss.addr, err)
 	}
@@ -76,7 +77,7 @@ func (ss *Socks5) DialContext(ctx context.Context, metadata *C.Metadata) (C.Conn
 func (ss *Socks5) DialUDP(metadata *C.Metadata) (_ C.PacketConn, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), tcpTimeout)
 	defer cancel()
-	c, err := dialer.DialContext(ctx, "tcp", ss.addr)
+	c, err := dialer.DialContext(ctx, "tcp", ss.addr, ss.SocketMark())
 	if err != nil {
 		err = fmt.Errorf("%s connect error: %w", ss.addr, err)
 		return
@@ -137,10 +138,11 @@ func NewSocks5(option Socks5Option) *Socks5 {
 
 	return &Socks5{
 		Base: &Base{
-			name: option.Name,
-			addr: net.JoinHostPort(option.Server, strconv.Itoa(option.Port)),
-			tp:   C.Socks5,
-			udp:  option.UDP,
+			name:       option.Name,
+			addr:       net.JoinHostPort(option.Server, strconv.Itoa(option.Port)),
+			tp:         C.Socks5,
+			udp:        option.UDP,
+			socketmark: option.SocketMark,
 		},
 		user:           option.UserName,
 		pass:           option.Password,

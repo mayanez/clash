@@ -12,10 +12,15 @@ type Direct struct {
 	*Base
 }
 
+type DirectOption struct {
+	Name       string `proxy:"name"`
+	SocketMark string `proxy:"socket-mark,omitempty"`
+}
+
 func (d *Direct) DialContext(ctx context.Context, metadata *C.Metadata) (C.Conn, error) {
 	address := net.JoinHostPort(metadata.String(), metadata.DstPort)
 
-	c, err := dialer.DialContext(ctx, "tcp", address)
+	c, err := dialer.DialContext(ctx, "tcp", address, d.SocketMark())
 	if err != nil {
 		return nil, err
 	}
@@ -35,12 +40,30 @@ type directPacketConn struct {
 	net.PacketConn
 }
 
-func NewDirect() *Direct {
+func NewDirectWithOption(option DirectOption) *Direct {
 	return &Direct{
 		Base: &Base{
-			name: "DIRECT",
-			tp:   C.Direct,
-			udp:  true,
+			name:       option.Name,
+			tp:         C.Direct,
+			udp:        true,
+			socketmark: option.SocketMark,
+		},
+	}
+}
+
+func NewDirect(socketMark ...string) *Direct {
+
+	sm := ""
+	if socketMark != nil {
+		sm = socketMark[0]
+	}
+
+	return &Direct{
+		Base: &Base{
+			name:       "DIRECT",
+			tp:         C.Direct,
+			udp:        true,
+			socketmark: sm,
 		},
 	}
 }

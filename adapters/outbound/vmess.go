@@ -36,6 +36,7 @@ type VmessOption struct {
 	WSHeaders      map[string]string `proxy:"ws-headers,omitempty"`
 	SkipCertVerify bool              `proxy:"skip-cert-verify,omitempty"`
 	ServerName     string            `proxy:"servername,omitempty"`
+	SocketMark     string            `proxy:"socket-mark,omitempty"`
 }
 
 type HTTPOptions struct {
@@ -106,7 +107,7 @@ func (v *Vmess) StreamConn(c net.Conn, metadata *C.Metadata) (net.Conn, error) {
 }
 
 func (v *Vmess) DialContext(ctx context.Context, metadata *C.Metadata) (C.Conn, error) {
-	c, err := dialer.DialContext(ctx, "tcp", v.addr)
+	c, err := dialer.DialContext(ctx, "tcp", v.addr, v.SocketMark())
 	if err != nil {
 		return nil, fmt.Errorf("%s connect error: %s", v.addr, err.Error())
 	}
@@ -128,7 +129,7 @@ func (v *Vmess) DialUDP(metadata *C.Metadata) (C.PacketConn, error) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), tcpTimeout)
 	defer cancel()
-	c, err := dialer.DialContext(ctx, "tcp", v.addr)
+	c, err := dialer.DialContext(ctx, "tcp", v.addr, v.SocketMark())
 	if err != nil {
 		return nil, fmt.Errorf("%s connect error: %s", v.addr, err.Error())
 	}
@@ -155,10 +156,11 @@ func NewVmess(option VmessOption) (*Vmess, error) {
 
 	return &Vmess{
 		Base: &Base{
-			name: option.Name,
-			addr: net.JoinHostPort(option.Server, strconv.Itoa(option.Port)),
-			tp:   C.Vmess,
-			udp:  true,
+			name:       option.Name,
+			addr:       net.JoinHostPort(option.Server, strconv.Itoa(option.Port)),
+			tp:         C.Vmess,
+			udp:        true,
+			socketmark: option.SocketMark,
 		},
 		client: client,
 		option: &option,

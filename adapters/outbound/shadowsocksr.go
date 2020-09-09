@@ -33,6 +33,7 @@ type ShadowSocksROption struct {
 	Protocol      string `proxy:"protocol"`
 	ProtocolParam string `proxy:"protocol-param,omitempty"`
 	UDP           bool   `proxy:"udp,omitempty"`
+	SocketMark    string `proxy:"socket-mark",omitempty"`
 }
 
 func (ssr *ShadowSocksR) StreamConn(c net.Conn, metadata *C.Metadata) (net.Conn, error) {
@@ -52,7 +53,7 @@ func (ssr *ShadowSocksR) StreamConn(c net.Conn, metadata *C.Metadata) (net.Conn,
 }
 
 func (ssr *ShadowSocksR) DialContext(ctx context.Context, metadata *C.Metadata) (C.Conn, error) {
-	c, err := dialer.DialContext(ctx, "tcp", ssr.addr)
+	c, err := dialer.DialContext(ctx, "tcp", ssr.addr, ssr.SocketMark())
 	if err != nil {
 		return nil, fmt.Errorf("%s connect error: %w", ssr.addr, err)
 	}
@@ -122,10 +123,11 @@ func NewShadowSocksR(option ShadowSocksROption) (*ShadowSocksR, error) {
 
 	return &ShadowSocksR{
 		Base: &Base{
-			name: option.Name,
-			addr: addr,
-			tp:   C.ShadowsocksR,
-			udp:  option.UDP,
+			name:       option.Name,
+			addr:       addr,
+			tp:         C.ShadowsocksR,
+			udp:        option.UDP,
+			socketmark: option.SocketMark,
 		},
 		cipher:   ciph,
 		obfs:     obfs,
