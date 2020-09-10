@@ -15,12 +15,13 @@ type Direct struct {
 type DirectOption struct {
 	Name       string `proxy:"name"`
 	SocketMark string `proxy:"socket-mark,omitempty"`
+	Interface  string `proxy:"interface-name,omitempty"`
 }
 
 func (d *Direct) DialContext(ctx context.Context, metadata *C.Metadata) (C.Conn, error) {
 	address := net.JoinHostPort(metadata.String(), metadata.DstPort)
 
-	c, err := dialer.DialContext(ctx, "tcp", address, d.SocketMark())
+	c, err := dialer.DialContext(ctx, "tcp", address, dialer.DialOptions{SocketMark: d.SocketMark(), Interface: d.Interface()})
 	if err != nil {
 		return nil, err
 	}
@@ -47,23 +48,17 @@ func NewDirectWithOption(option DirectOption) *Direct {
 			tp:         C.Direct,
 			udp:        true,
 			socketmark: option.SocketMark,
+			ifname:     option.Interface,
 		},
 	}
 }
 
-func NewDirect(socketMark ...string) *Direct {
-
-	sm := ""
-	if socketMark != nil {
-		sm = socketMark[0]
-	}
-
+func NewDirect() *Direct {
 	return &Direct{
 		Base: &Base{
-			name:       "DIRECT",
-			tp:         C.Direct,
-			udp:        true,
-			socketmark: sm,
+			name: "DIRECT",
+			tp:   C.Direct,
+			udp:  true,
 		},
 	}
 }

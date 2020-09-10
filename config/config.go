@@ -259,7 +259,7 @@ func parseProxies(cfg *RawConfig) (proxies map[string]C.Proxy, providersMap map[
 	groupsConfig := cfg.ProxyGroup
 	providersConfig := cfg.ProxyProvider
 
-	proxies["DIRECT"] = outbound.NewProxy(outbound.NewDirect(cfg.SocketMark))
+	proxies["DIRECT"] = outbound.NewProxy(outbound.NewDirectWithOption(outbound.DirectOption{SocketMark: cfg.SocketMark, Interface: cfg.Interface}))
 	proxies["REJECT"] = outbound.NewProxy(outbound.NewReject())
 	proxyList = append(proxyList, "DIRECT", "REJECT")
 

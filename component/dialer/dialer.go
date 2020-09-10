@@ -9,6 +9,11 @@ import (
 	"strconv"
 )
 
+type DialOptions struct {
+	SocketMark string
+	Interface  string
+}
+
 func Dialer() (*net.Dialer, error) {
 	dialer := &net.Dialer{}
 	if DialerHook != nil {
@@ -35,7 +40,7 @@ func Dial(network, address string) (net.Conn, error) {
 	return DialContext(context.Background(), network, address)
 }
 
-func DialContext(ctx context.Context, network, address string, mark ...string) (net.Conn, error) {
+func DialContext(ctx context.Context, network, address string, opts ...DialOptions) (net.Conn, error) {
 	switch network {
 	case "tcp4", "tcp6", "udp4", "udp6":
 		host, port, err := net.SplitHostPort(address)
@@ -45,12 +50,13 @@ func DialContext(ctx context.Context, network, address string, mark ...string) (
 
 		dialer, err := Dialer()
 
-		if mark != nil {
-			markint, err := strconv.Atoi(mark[0])
+		if opts != nil {
+			markint, err := strconv.Atoi(opts[0].SocketMark)
 			if err == nil {
 				sockopt.Mark(dialer, markint)
 			}
 
+			sockopt.BindToDevice(dialer, opts[0].Interface)
 		}
 
 		if err != nil {
@@ -76,7 +82,7 @@ func DialContext(ctx context.Context, network, address string, mark ...string) (
 		}
 		return dialer.DialContext(ctx, network, net.JoinHostPort(ip.String(), port))
 	case "tcp", "udp":
-		return dualStackDialContext(ctx, network, address, mark)
+		return dualStackDialContext(ctx, network, address, opts)
 	default:
 		return nil, errors.New("network invalid")
 	}
@@ -98,7 +104,7 @@ func ListenPacket(network, address string) (net.PacketConn, error) {
 	return lc.ListenPacket(context.Background(), network, address)
 }
 
-func dualStackDialContext(ctx context.Context, network, address string, mark []string) (net.Conn, error) {
+func dualStackDialContext(ctx context.Context, network, address string, opts []DialOptions) (net.Conn, error) {
 	host, port, err := net.SplitHostPort(address)
 	if err != nil {
 		return nil, err
@@ -135,11 +141,12 @@ func dualStackDialContext(ctx context.Context, network, address string, mark []s
 			return
 		}
 
-		if mark != nil {
-			markint, err := strconv.Atoi(mark[0])
+		if opts != nil {
+			markint, err := strconv.Atoi(opts[0].SocketMark)
 			if err == nil {
 				sockopt.Mark(dialer, markint)
 			}
+			sockopt.BindToDevice(dialer, opts[0].Interface)
 		}
 
 		var ip net.IP

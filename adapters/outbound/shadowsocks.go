@@ -38,6 +38,7 @@ type ShadowSocksOption struct {
 	Plugin     string                 `proxy:"plugin,omitempty"`
 	PluginOpts map[string]interface{} `proxy:"plugin-opts,omitempty"`
 	SocketMark string                 `proxy:"socket-mark,omitempty"`
+	Interface  string                 `proxy:"interface-name,omitempty"`
 }
 
 type simpleObfsOption struct {
@@ -75,7 +76,7 @@ func (ss *ShadowSocks) StreamConn(c net.Conn, metadata *C.Metadata) (net.Conn, e
 }
 
 func (ss *ShadowSocks) DialContext(ctx context.Context, metadata *C.Metadata) (C.Conn, error) {
-	c, err := dialer.DialContext(ctx, "tcp", ss.addr, ss.SocketMark())
+	c, err := dialer.DialContext(ctx, "tcp", ss.addr, dialer.DialOptions{SocketMark: ss.SocketMark(), Interface: ss.Interface()})
 	if err != nil {
 		return nil, fmt.Errorf("%s connect error: %w", ss.addr, err)
 	}
@@ -162,6 +163,7 @@ func NewShadowSocks(option ShadowSocksOption) (*ShadowSocks, error) {
 			tp:         C.Shadowsocks,
 			udp:        option.UDP,
 			socketmark: option.SocketMark,
+			ifname:     option.Interface,
 		},
 		cipher: ciph,
 
